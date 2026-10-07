@@ -58,6 +58,16 @@ class Store:
     def due(self, now: datetime) -> list[Reminder]:
         return [r for r in self.active() if r.due <= now]
 
+    def update(self, rid: int, message: str, due: datetime, recurrence: str, anchor_day: int | None):
+        self.db.execute("UPDATE reminders SET message=?, due=?, recurrence=?, anchor_day=?, active=1 WHERE id=?",
+                        (message, due.isoformat(timespec="minutes"), recurrence, anchor_day, rid))
+        self.db.commit()
+
+    def get(self, rid: int) -> Reminder | None:
+        r = self.db.execute("SELECT id, message, due, recurrence, anchor_day FROM reminders WHERE id=?",
+                            (rid,)).fetchone()
+        return self._row(r) if r else None
+
     def delete(self, rid: int):
         self.db.execute("DELETE FROM reminders WHERE id=?", (rid,))
         self.db.commit()
