@@ -1,5 +1,6 @@
 """Janela principal + popups no canto da tela + agendador."""
 import ctypes
+import logging
 import queue
 import re
 import socket
@@ -14,7 +15,7 @@ import pystray
 from tkcalendar import DateEntry
 
 from . import icon
-from .storage import Reminder, Store
+from .storage import Reminder, Store, default_path
 
 PORT = 47819  # instância única
 DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
@@ -145,6 +146,7 @@ class App:
         root.minsize(int(560 * self.scale), int(520 * self.scale))
         root.protocol("WM_DELETE_WINDOW", root.withdraw)  # fechar = esconder na bandeja
         root.iconbitmap(str(icon.ensure_ico()))
+        root.report_callback_exception = lambda *exc: logging.error("erro na interface", exc_info=exc)
 
         self.tray = pystray.Icon("lembreme", icon.draw(64), "Lembreme", pystray.Menu(
             pystray.MenuItem("Abrir", lambda: self.cmds.put("show"), default=True),
@@ -439,6 +441,7 @@ class App:
         self.root.after(300, self._poll_cmds)
 
     def quit(self):
+        logging.info("saindo")
         self.tray.stop()
         self.root.destroy()
 
@@ -447,6 +450,11 @@ class App:
 
 
 def main():
+    logging.basicConfig(filename=default_path().with_name("lembreme.log"), level=logging.INFO,
+                        format="%(asctime)s %(levelname)s %(message)s", encoding="utf-8")
+    sys.excepthook = lambda *exc: logging.critical("erro fatal", exc_info=exc)
+    threading.excepthook = lambda a: logging.critical("erro na thread %s", a.thread.name,
+                                                      exc_info=(a.exc_type, a.exc_value, a.exc_traceback))
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("lembreme")  # ícone próprio na barra
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -463,4 +471,5 @@ def main():
             c.sendall(b"show")
         return
 
+    logging.info("iniciando")
     App("--oculto" in sys.argv, server).run()
