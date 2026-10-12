@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+  <title>Lembreme</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="icons.js"></script>
+  <script src="fmt.js"></script>
+</head>
+<body>
+  <header id="titlebar">
+    <div class="brand"><img src="icon.png" alt=""> Lembreme</div>
+    <div id="next-pill" class="next-pill hidden"></div>
+  </header>
+
+  <main id="workspace">
+    <section id="composer" class="panel">
+      <div class="panel-head">
+        <h2 id="form-title">Novo lembrete</h2>
+        <button id="btn-new" class="ghost hidden" title="Começar um novo (Ctrl+N)"><i data-icon="plus"></i>Novo</button>
+      </div>
+
+      <label class="lbl" for="f-msg">O que lembrar?</label>
+      <input id="f-msg" type="text" maxlength="200" placeholder="Ex.: Pagar a conta de luz" spellcheck="true" autocomplete="off">
+      <div class="err" id="err-msg"></div>
+
+      <label class="lbl">Quando?</label>
+      <div class="quick" id="quick"></div>
+      <div class="when">
+        <label class="field"><i data-icon="calendar"></i><input id="f-date" type="date"></label>
+        <label class="field"><i data-icon="clock"></i><input id="f-time" type="time"></label>
+      </div>
+
+      <label class="lbl">Repetir</label>
+      <div class="seg" id="f-rep"></div>
+
+      <div class="summary" id="summary"></div>
+
+      <div class="actions">
+        <button id="btn-cancel" class="hidden">Cancelar</button>
+        <button id="btn-save" class="primary big"><i data-icon="plus"></i><span>Adicionar lembrete</span></button>
+      </div>
+      <div class="hint"><kbd>Enter</kbd> salva · <kbd>Esc</kbd> cancela · <kbd>Ctrl</kbd>+<kbd>N</kbd> novo</div>
+    </section>
+
+    <section id="board" class="panel">
+      <div class="panel-head">
+        <div class="tabs" role="tablist">
+          <button class="tab on" data-tab="next">Próximos <span class="count" id="count-next"></span></button>
+          <button class="tab" data-tab="done">Concluídos <span class="count" id="count-done"></span></button>
+        </div>
+        <div class="spacer"></div>
+        <button id="btn-clear" class="ghost hidden" title="Apagar todos os concluídos"><i data-icon="trash"></i>Limpar</button>
+        <button id="btn-test" class="ghost" title="Mostra um aviso de exemplo no canto da tela"><i data-icon="bellRing"></i>Testar aviso</button>
+      </div>
+      <div id="items"></div>
+      <footer class="board-foot">
+        <label class="switch" id="login-wrap" title="Abre escondido na bandeja quando o Windows liga">
+          <input type="checkbox" id="opt-login"><span class="knob"></span>Iniciar com o Windows
+        </label>
+        <div class="spacer"></div>
+        <span class="muted">Fechar a janela mantém o Lembreme na bandeja</span>
+      </footer>
+    </section>
+  </main>
+
+  <div id="toasts"></div>
+  <script src="app.js"></script>
+</body>
+</html>
