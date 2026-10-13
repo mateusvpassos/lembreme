@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="icons.js"></script>
   <script src="fmt.js"></script>
+  <script src="types.js"></script>
 </head>
 <body>
   <header id="titlebar">
@@ -24,6 +25,9 @@
       <label class="lbl" for="f-msg">O que lembrar?</label>
       <input id="f-msg" type="text" maxlength="200" placeholder="Ex.: Pagar a conta de luz" spellcheck="true" autocomplete="off">
       <div class="err" id="err-msg"></div>
+
+      <label class="lbl">Tipo <span class="lbl-note" id="type-note"></span></label>
+      <div class="types" id="f-type"></div>
 
       <label class="lbl">Quando?</label>
       <div class="quick" id="quick"></div>
@@ -54,6 +58,7 @@
         <button id="btn-clear" class="ghost hidden" title="Apagar todos os concluídos"><i data-icon="trash"></i>Limpar</button>
         <button id="btn-test" class="ghost" title="Mostra um aviso de exemplo no canto da tela"><i data-icon="bellRing"></i>Testar aviso</button>
       </div>
+      <div class="filters" id="filters"></div>
       <div id="items"></div>
       <footer class="board-foot">
         <label class="switch" id="login-wrap" title="Abre escondido na bandeja quando o Windows liga">

@@ -5,6 +5,7 @@ Lembretes no desktop (Windows) com aviso no canto da tela. Electron, mesma famí
 ## Recursos
 - **Formulário:** o que lembrar, dia, hora, atalhos (Em 10 min, Em 1 hora, Hoje 18:00, Amanhã 09:00, Segunda 09:00) e repetição (uma vez, diário, semanal, mensal, anual)
 - **Resumo ao vivo:** mostra em português quando vai avisar e como repete
+- **Tipos:** conta, fatura, imposto, parcela, saúde, trabalho, compromisso, pessoal, outro — sugerido pelo texto ("luz", "INSS", "cartão"...), com cor/ícone e filtro na lista
 - **Lista agrupada:** atrasados, hoje, amanhã, próximos 7 dias, mais adiante; aba de concluídos
 - **Editar** clicando no item; **excluir com desfazer**
 - **Aviso no canto inferior direito:** som curto, empilha vários, adiar 10 min / 1 h / amanhã 9h
@@ -27,6 +28,6 @@ npm start
 ```bash
 npm run dist
 ```
-Saída em `dist/Lembreme-Setup-<versão>.exe`. Instalado, liga "Iniciar com o Windows" na primeira execução.
+Saída em `dist/Lembreme-Setup-<versão>.exe`. Instalado, liga "Iniciar com o Windows" (atalho na pasta Inicializar) na primeira execução. Usa o Electron do `node_modules` (`electronDist`), sem baixar do GitHub. Log em `%APPDATA%\Lembreme\lembreme.log`.
 
 Ícone: `assets/icon.svg` → `npm run icon` gera `renderer/icon.png`. Testes: `npm test`.

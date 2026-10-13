@@ -138,10 +138,11 @@ button.danger:hover { background: rgba(255, 93, 108, .14); border-color: rgba(25
 
 /* ---------- formulário ---------- */
 #composer { padding: 16px 18px; overflow-y: auto; }
+#composer > * { flex-shrink: 0; }
 #composer .panel-head { margin-bottom: 6px; }
 #composer.editing { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
 .lbl {
-  display: block; margin: 14px 0 7px;
+  display: block; margin: 13px 0 7px;
   font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
 }
 input[type=text], .field {
@@ -159,6 +160,18 @@ input[type=text]:focus, .field:focus-within { border-color: var(--accent); box-s
 .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .quick button { height: 28px; padding: 0 10px; font-size: 12px; background: var(--panel-2); }
 .quick button.on { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-text); }
+
+.lbl-note { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--accent-text); }
+.types { display: flex; flex-wrap: wrap; gap: 6px; }
+.types button {
+  height: 28px; padding: 0 10px 0 8px; font-size: 12px; gap: 6px; background: var(--panel-2); color: var(--muted);
+}
+.types button .ic { color: var(--c); }
+.types button:hover { color: var(--text); }
+.types button.on {
+  color: var(--text); border-color: color-mix(in srgb, var(--c) 60%, transparent);
+  background: color-mix(in srgb, var(--c) 16%, var(--panel-2));
+}
 
 .when { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
 .field:hover { border-color: #3e4358; }
@@ -220,9 +233,26 @@ input[type=text]:focus, .field:focus-within { border-color: var(--accent); box-s
 .group-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .group.late .group-title { color: #ff8a95; }
 
+.filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+.filters button { height: 26px; padding: 0 9px; font-size: 12px; gap: 5px; background: transparent; color: var(--muted); }
+.filters button .ic { color: var(--c); }
+.filters button:hover { background: var(--surface); color: var(--text); }
+.filters button.on { background: var(--surface-hover); color: var(--text); border-color: var(--border-2); }
+.filters .count { height: 16px; min-width: 16px; font-size: 10px; }
+
+.type-tile {
+  width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
+  color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 28%, transparent);
+}
+.type-name {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--c);
+}
+.type-name .ic { color: var(--c); }
+
 .item {
   position: relative;
-  display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 12px;
+  display: grid; grid-template-columns: 74px 32px 1fr auto; align-items: center; gap: 12px;
   padding: 10px 10px 10px 12px; margin-bottom: 6px;
   background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
   cursor: pointer; transition: background .12s, border-color .12s, transform .12s;

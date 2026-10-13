@@ -1,7 +1,7 @@
 {
   "name": "lembreme",
-  "version": "0.2.0",
-  "description": "Lembreme — lembretes no desktop com aviso no canto da tela (Electron)",
+  "version": "0.3.0",
+  "description": "Lembreme â€” lembretes no desktop com aviso no canto da tela (Electron)",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -14,6 +14,7 @@
   "build": {
     "appId": "com.mateusvpassos.lembreme",
     "productName": "Lembreme",
+    "electronDist": "node_modules/electron/dist",
     "files": [
       "main.js",
       "preload.js",

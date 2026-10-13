@@ -1,7 +1,8 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { toLocal, fromLocal, nextAfter } = require('./shared/recur');
+const { TYPES, guessType } = require('./renderer/types');
 
 app.setName('Lembreme');
 app.setAppUserModelId('com.mateusvpassos.lembreme');
@@ -19,6 +20,18 @@ let quitting = false;
 let db = { reminders: [], settings: {} };
 let alerts = [];
 
+// log simples em %APPDATA%\Lembreme\lembreme.log (diagnóstico de inicialização)
+function log(...a) {
+  try {
+    const f = path.join(app.getPath('userData'), 'lembreme.log');
+    if (fs.existsSync(f) && fs.statSync(f).size > 256 * 1024) fs.renameSync(f, f + '.1');
+    fs.appendFileSync(f, `${new Date().toISOString()} ${a.map(x => x?.stack || (typeof x === 'string' ? x : JSON.stringify(x))).join(' ')}
+`);
+  } catch {}
+}
+process.on('uncaughtException', e => log('ERRO', e));
+process.on('unhandledRejection', e => log('ERRO (promise)', e));
+
 // ---------- dados ----------
 function load() {
   try {
@@ -29,6 +42,12 @@ function load() {
   }
   db.reminders ||= [];
   db.settings ||= {};
+  // lembretes antigos ganham um tipo sugerido pelo texto
+  let touched = false;
+  for (const r of db.reminders) {
+    if (!r.type) { r.type = guessType(r.message) || 'outro'; touched = true; }
+  }
+  if (touched) save();
 }
 
 function save() {
@@ -66,6 +85,7 @@ function validate(r) {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(r.due || '')) return 'Escolha dia e hora.';
   if (!['unica', ...Object.keys(REP_LABEL)].includes(r.recurrence)) return 'Repetição inválida.';
   if (r.recurrence === 'unica' && fromLocal(r.due) <= new Date()) return 'Esse horário já passou.';
+  if (r.type && !TYPES[r.type]) return 'Tipo inválido.';
   return null;
 }
 
@@ -76,7 +96,7 @@ function tick() {
   for (const r of db.reminders) {
     if (r.done || fromLocal(r.due) > now) continue;
     alerts.push({
-      key: uniq(), id: r.id, message: r.message, due: r.due, recurrence: r.recurrence,
+      key: uniq(), id: r.id, message: r.message, due: r.due, recurrence: r.recurrence, type: r.type,
       late: now - fromLocal(r.due) > 2 * 60_000
     });
     if (r.recurrence === 'unica') {
@@ -131,7 +151,7 @@ ipcMain.on('popup-action', (_, key, action, minutes) => {
   if (a && action === 'snooze') {
     const due = new Date(Date.now() + minutes * 60_000);
     due.setSeconds(0, 0);
-    db.reminders.push({ id: uniq(), message: a.message, due: toLocal(due), recurrence: 'unica', created: toLocal(new Date()) });
+    db.reminders.push({ id: uniq(), message: a.message, type: a.type, due: toLocal(due), recurrence: 'unica', created: toLocal(new Date()) });
     changed();
   }
   if (a && action === 'open') showWindow();
@@ -140,14 +160,14 @@ ipcMain.on('popup-action', (_, key, action, minutes) => {
 
 function testPopup() {
   const now = new Date();
-  alerts.push({ key: uniq(), id: null, message: 'Teste: é assim que o lembrete aparece', due: toLocal(now), recurrence: 'unica', late: false });
+  alerts.push({ key: uniq(), id: null, message: 'Teste: é assim que o lembrete aparece', type: 'conta', due: toLocal(now), recurrence: 'unica', late: false });
   showAlerts();
 }
 
 // ---------- janela ----------
 function createWindow() {
   win = new BrowserWindow({
-    width: 980, height: 680, minWidth: 780, minHeight: 540,
+    width: 1000, height: 760, minWidth: 800, minHeight: 600,
     title: 'Lembreme', icon: ICON, show: false,
     backgroundColor: '#0d0e13',
     titleBarStyle: 'hidden',
@@ -163,6 +183,9 @@ function createWindow() {
     e.preventDefault();
     win.hide();
   });
+  // desligar/reiniciar o Windows: sai de verdade (antes o "esconder" bloqueava o desligamento)
+  win.on('query-session-end', () => { quitting = true; log('fim de sessão do Windows'); });
+  win.on('session-end', () => { quitting = true; app.quit(); });
 }
 
 function showWindow() {
@@ -197,16 +220,39 @@ function updateTray() {
   ]));
 }
 
-const loginEnabled = () => app.isPackaged && app.getLoginItemSettings({ args: ['--oculto'] }).openAtLogin;
+// atalho na pasta Inicializar (o mesmo método do Transcritor; a chave Run não estava sendo executada)
+const startupLnk = () => path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', 'Lembreme.lnk');
+const loginEnabled = () => app.isPackaged && fs.existsSync(startupLnk());
 function setLogin(on) {
   if (!app.isPackaged) return;
-  app.setLoginItemSettings({ openAtLogin: on, args: ['--oculto'] });
+  app.setLoginItemSettings({ openAtLogin: false, args: ['--oculto'] }); // remove a chave Run antiga
+  if (on) {
+    shell.writeShortcutLink(startupLnk(), 'create', {
+      target: process.execPath, args: '--oculto', cwd: path.dirname(process.execPath),
+      icon: process.execPath, iconIndex: 0, appUserModelId: 'com.mateusvpassos.lembreme', description: 'Lembreme'
+    });
+  } else {
+    fs.rmSync(startupLnk(), { force: true });
+  }
+  log('iniciar com o Windows:', on);
   db.settings.openAtLogin = on;
   save();
   updateTray();
   win?.webContents.send('settings', settings());
 }
 const settings = () => ({ openAtLogin: loginEnabled(), packaged: app.isPackaged });
+
+// no login a bandeja do Windows pode ainda não estar pronta: tenta de novo
+function createTray(attempt = 1) {
+  try {
+    tray = new Tray(nativeImage.createFromPath(ICON).resize({ width: 32, height: 32, quality: 'best' }));
+    tray.on('click', showWindow);
+    updateTray();
+  } catch (e) {
+    log('bandeja falhou, tentativa', attempt, e);
+    if (attempt < 10) setTimeout(() => createTray(attempt + 1), 5000);
+  }
+}
 
 // ---------- IPC da janela ----------
 ipcMain.handle('list', () => db.reminders);
@@ -216,9 +262,9 @@ ipcMain.handle('save', (_, r) => {
   const anchorDay = +r.due.slice(8, 10);
   const existing = r.id && db.reminders.find(x => x.id === r.id);
   if (existing) {
-    Object.assign(existing, { message: r.message.trim(), due: r.due, recurrence: r.recurrence, anchorDay, done: false, doneAt: undefined });
+    Object.assign(existing, { message: r.message.trim(), type: r.type || 'outro', due: r.due, recurrence: r.recurrence, anchorDay, done: false, doneAt: undefined });
   } else {
-    db.reminders.push({ id: uniq(), message: r.message.trim(), due: r.due, recurrence: r.recurrence, anchorDay, created: toLocal(new Date()) });
+    db.reminders.push({ id: uniq(), message: r.message.trim(), type: r.type || 'outro', due: r.due, recurrence: r.recurrence, anchorDay, created: toLocal(new Date()) });
   }
   changed();
   return { ok: true };
@@ -247,17 +293,16 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', showWindow);
   app.whenReady().then(() => {
+    log('iniciando', process.argv.slice(1).join(' '));
     load();
-    // primeira execução instalada: liga o "iniciar com o Windows"
-    if (app.isPackaged && db.settings.openAtLogin === undefined) setLogin(true);
+    // liga o "iniciar com o Windows" na primeira execução e migra quem usava a chave Run
+    if (app.isPackaged && db.settings.openAtLogin !== false && !fs.existsSync(startupLnk())) setLogin(true);
     createWindow();
-    tray = new Tray(nativeImage.createFromPath(ICON).resize({ width: 32, height: 32, quality: 'best' }));
-    tray.on('click', showWindow);
-    updateTray();
+    createTray();
     tick();
     setInterval(tick, 10_000);
     setInterval(updateTray, 60_000);
   });
   app.on('window-all-closed', () => {}); // continua na bandeja
-  app.on('before-quit', () => { quitting = true; });
+  app.on('before-quit', () => { quitting = true; log('saindo'); });
 }

@@ -32,7 +32,7 @@ function card(a) {
       ${a.late ? '<span class="tag">atrasado</span>' : ''}
       <button class="close" data-a="done" title="Fechar">${icon('x', 14)}</button></div>
     <div class="msg" data-a="open" title="Abrir o Lembreme">${esc(a.message)}</div>
-    <div class="meta">${a.recurrence !== 'unica' ? `<span class="badge">${icon('repeat', 11)}${REP[a.recurrence]}</span>` : ''}</div>
+    <div class="meta">${meta(a)}</div>
     <div class="row">
       <span class="lbl2">Adiar</span>
       <button data-a="snooze" data-m="10">10 min</button>
@@ -47,6 +47,12 @@ function card(a) {
     setTimeout(() => api.popupAction(a.key, b.dataset.a, +b.dataset.m || 0), 180);
   });
   return el;
+}
+
+function meta(a) {
+  const t = TYPES[a.type];
+  return (t && a.type !== 'outro' ? `<span class="type-name" style="--c:${t.color}">${icon(t.icon, 12)}${t.label}</span>` : '') +
+    (a.recurrence !== 'unica' ? `<span class="badge">${icon('repeat', 11)}${REP[a.recurrence]}</span>` : '');
 }
 
 function minutesToTomorrow9() {

@@ -6,6 +6,9 @@ const state = {
   tab: 'next',
   editing: null,       // id em edição
   rep: 'unica',
+  type: 'outro',
+  typeManual: false,   // escolhido à mão: para de sugerir pelo texto
+  filter: 'all',
   selected: null
 };
 
@@ -47,6 +50,19 @@ function buildForm() {
     if (b) setRep(b.dataset.rep);
   });
 
+  $('#f-type').innerHTML = Object.entries(TYPES).map(([k, t]) =>
+    `<button data-type="${k}" style="--c:${t.color}">${icon(t.icon, 14)}${t.label}</button>`).join('');
+  $('#f-type').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    state.typeManual = true;
+    setType(b.dataset.type);
+  });
+  msgEl.addEventListener('input', () => {
+    if (state.typeManual) return;
+    setType(guessType(msgEl.value) || 'outro', true);
+  });
+
   for (const el of [msgEl, dateEl, timeEl]) {
     el.addEventListener('input', () => { clearErr(); updateSummary(); });
     el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
@@ -64,6 +80,11 @@ function setWhen(d) {
   dateEl.value = toLocal(d).slice(0, 10);
   timeEl.value = hhmm(d);
   updateSummary();
+}
+function setType(k, auto = false) {
+  state.type = k;
+  for (const b of $('#f-type').children) b.classList.toggle('on', b.dataset.type === k);
+  $('#type-note').textContent = auto && k !== 'outro' ? '· sugerido pelo texto' : '';
 }
 function setRep(k) {
   state.rep = k;
@@ -115,7 +136,7 @@ async function submit() {
   if (!message) return showErr('Escreva o que lembrar.', msgEl);
   const due = formDue();
   if (!due) return showErr('Escolha dia e hora.', dateEl.value ? timeEl : dateEl);
-  const res = await api.save({ id: state.editing, message, due, recurrence: state.rep });
+  const res = await api.save({ id: state.editing, message, due, recurrence: state.rep, type: state.type });
   if (res.error) return showErr(res.error, res.error.includes('horário') ? timeEl : msgEl);
   const d = fromLocal(due);
   toast(`${state.editing ? 'Alterado' : 'Criado'} · ${dayLabel(d)} às ${hhmm(d)}`);
@@ -132,6 +153,8 @@ function resetForm() {
   dateEl.min = toLocal(new Date()).slice(0, 10);
   setWhen(d);
   setRep('unica');
+  state.typeManual = false;
+  setType('outro');
   clearErr();
   $('#composer').classList.remove('editing');
   $('#form-title').textContent = 'Novo lembrete';
@@ -151,6 +174,8 @@ function loadIntoForm(r, asCopy = false) {
   if (asCopy && d <= new Date()) d = at(1, d.getHours());
   setWhen(d);
   setRep(asCopy ? 'unica' : r.recurrence);
+  state.typeManual = true;
+  setType(r.type || 'outro');
   clearErr();
   $('#composer').classList.toggle('editing', !asCopy);
   $('#form-title').textContent = asCopy ? 'Novo lembrete (cópia)' : 'Editando lembrete';
@@ -176,6 +201,7 @@ function groupOf(d, now) {
 function itemHtml(r, now) {
   const d = fromLocal(r.due);
   const cls = r.done ? 'done' : d <= now ? 'late' : dayDiff(d, now) === 0 ? 'today' : '';
+  const t = TYPES[r.type] || TYPES.outro;
   const rep = r.recurrence !== 'unica' ? `<span class="badge">${icon('repeat', 11)}${REP[r.recurrence]}</span>` : '';
   const rel = r.done ? `avisado ${dayLabel(d, now).toLowerCase()} às ${hhmm(d)}` : relative(d, now);
   const acts = r.done
@@ -184,17 +210,21 @@ function itemHtml(r, now) {
   return `
     <div class="item ${cls} ${state.selected === r.id ? 'selected' : ''}" data-id="${r.id}" tabindex="0">
       <div class="when-col"><span class="t">${hhmm(d)}</span><span class="d">${dayLabel(d, now)}</span></div>
-      <div class="body"><div class="msg" title="${esc(r.message)}">${esc(r.message)}</div><div class="meta">${rep}<span>${rel}</span></div></div>
+      <div class="type-tile" style="--c:${t.color}" title="${t.label}">${icon(t.icon, 15)}</div>
+      <div class="body"><div class="msg" title="${esc(r.message)}">${esc(r.message)}</div><div class="meta">${r.type && r.type !== 'outro' ? `<span class="type-name" style="--c:${t.color}">${t.label}</span>` : ''}${rep}<span>${rel}</span></div></div>
       <div class="acts">${acts}<button data-act="del" class="danger" title="Excluir (Delete)">${icon('trash')}</button></div>
     </div>`;
 }
 
 function render() {
   const now = new Date();
-  const next = state.list.filter(r => !r.done).sort((a, b) => a.due.localeCompare(b.due));
-  const done = state.list.filter(r => r.done).sort((a, b) => (b.doneAt || b.due).localeCompare(a.doneAt || a.due));
-  $('#count-next').textContent = next.length || '';
-  $('#count-done').textContent = done.length || '';
+  const allNext = state.list.filter(r => !r.done).sort((a, b) => a.due.localeCompare(b.due));
+  const allDone = state.list.filter(r => r.done).sort((a, b) => (b.doneAt || b.due).localeCompare(a.doneAt || a.due));
+  renderFilters(state.tab === 'next' ? allNext : allDone);
+  const pass = r => state.filter === 'all' || (r.type || 'outro') === state.filter;
+  const next = allNext.filter(pass), done = allDone.filter(pass);
+  $('#count-next').textContent = allNext.length || '';
+  $('#count-done').textContent = allDone.length || '';
   for (const t of document.querySelectorAll('.tab')) t.classList.toggle('on', t.dataset.tab === state.tab);
   $('#btn-clear').classList.toggle('hidden', state.tab !== 'done' || !done.length);
 
@@ -220,12 +250,30 @@ function render() {
 
   // pílula do próximo na barra de título
   const pill = $('#next-pill');
-  if (next.length) {
-    const d = fromLocal(next[0].due);
-    pill.innerHTML = `${icon('bell', 13)}<span>Próximo: <b>${esc(next[0].message)}</b> · ${dayLabel(d, now).toLowerCase()} ${hhmm(d)}</span>`;
+  if (allNext.length) {
+    const d = fromLocal(allNext[0].due);
+    pill.innerHTML = `${icon('bell', 13)}<span>Próximo: <b>${esc(allNext[0].message)}</b> · ${dayLabel(d, now).toLowerCase()} ${hhmm(d)}</span>`;
     pill.classList.remove('hidden');
   } else pill.classList.add('hidden');
 }
+
+// filtro por tipo (só aparecem os tipos que existem na aba)
+function renderFilters(items) {
+  const counts = {};
+  for (const r of items) counts[r.type || 'outro'] = (counts[r.type || 'outro'] || 0) + 1;
+  const used = Object.keys(TYPES).filter(k => counts[k]);
+  if (state.filter !== 'all' && !counts[state.filter]) state.filter = 'all';
+  const box = $('#filters');
+  box.classList.toggle('hidden', used.length < 2);
+  box.innerHTML = `<button data-f="all" class="${state.filter === 'all' ? 'on' : ''}">Todos <span class="count">${items.length}</span></button>` +
+    used.map(k => `<button data-f="${k}" style="--c:${TYPES[k].color}" class="${state.filter === k ? 'on' : ''}">${icon(TYPES[k].icon, 13)}${TYPES[k].label} <span class="count">${counts[k]}</span></button>`).join('');
+}
+$('#filters').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  state.filter = b.dataset.f;
+  render();
+});
 
 $('#items').addEventListener('click', e => {
   const it = e.target.closest('.item');
