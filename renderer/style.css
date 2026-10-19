@@ -37,7 +37,7 @@
   --accent-soft: rgba(34, 195, 230, .14);
   --accent-line: rgba(34, 195, 230, .5);
   --accent-ring: rgba(34, 195, 230, .32);
-  --grad: linear-gradient(135deg, #5ef0b0 0%, #22c3e6 52%, #6f8bff 100%);
+  --grad: linear-gradient(135deg, #67e8f9 0%, #22c3e6 52%, #2f9bf0 100%);
   --danger: #ff5d6c;
   --ok: #3ddc97;
   --warn: #ffbf47;

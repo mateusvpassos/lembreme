@@ -4,7 +4,7 @@
       <stop offset="0" stop-color="#262a40"/><stop offset="1" stop-color="#101119"/>
     </linearGradient>
     <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="130" y1="120" x2="400" y2="400">
-      <stop offset="0" stop-color="#5ef0b0"/><stop offset=".5" stop-color="#22c3e6"/><stop offset="1" stop-color="#6f8bff"/>
+      <stop offset="0" stop-color="#67e8f9"/><stop offset=".5" stop-color="#22c3e6"/><stop offset="1" stop-color="#2f9bf0"/>
     </linearGradient>
     <radialGradient id="glow" cx=".5" cy=".5" r=".5">
       <stop offset="0" stop-color="#22c3e6" stop-opacity=".32"/><stop offset="1" stop-color="#22c3e6" stop-opacity="0"/>
