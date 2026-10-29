@@ -34,11 +34,20 @@ process.on('unhandledRejection', e => log('ERRO (promise)', e));
 
 // ---------- dados ----------
 function load() {
-  try {
-    db = JSON.parse(fs.readFileSync(dataFile(), 'utf8'));
-  } catch {
+  if (!fs.existsSync(dataFile())) {
     db = { reminders: migrateFromPython(), settings: {} };
     save();
+  } else {
+    try {
+      db = JSON.parse(fs.readFileSync(dataFile(), 'utf8'));
+    } catch (e) {
+      // arquivo corrompido: guarda uma cópia em vez de sobrescrever os lembretes
+      const bak = dataFile() + '.corrompido-' + Date.now();
+      fs.copyFileSync(dataFile(), bak);
+      log('lembretes.json ilegível, cópia em', bak, e);
+      db = { reminders: [], settings: {} };
+      save();
+    }
   }
   db.reminders ||= [];
   db.settings ||= {};

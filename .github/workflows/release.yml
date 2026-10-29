@@ -1,0 +1,30 @@
+name: Release
+
+# git tag v0.3.0 && git push origin v0.3.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Instalador
+        run: npm run dist
+      - name: GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" --title "Lembreme ${GITHUB_REF_NAME#v}" --generate-notes
+          "dist/Lembreme-Setup-${GITHUB_REF_NAME#v}.exe"

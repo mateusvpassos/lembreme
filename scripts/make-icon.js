@@ -6,7 +6,7 @@ const path = require('path');
 
 app.whenReady().then(async () => {
   const svg = fs.readFileSync(path.join(__dirname, '..', 'assets', 'icon.svg'), 'utf8');
-  const win = new BrowserWindow({ show: false, width: 512, height: 512, transparent: true, webPreferences: { offscreen: true } });
+  const win = new BrowserWindow({ show: false, width: 512, height: 512, transparent: true, frame: false });
   const html = `<html><body style="margin:0;background:transparent">${svg.replace('<svg ', '<svg width="512" height="512" ')}</body></html>`;
   await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
   await new Promise(r => setTimeout(r, 300));

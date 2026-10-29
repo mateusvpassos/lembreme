@@ -1,9 +1,16 @@
 {
   "name": "lembreme",
   "version": "0.3.0",
-  "description": "Lembreme â€” lembretes no desktop com aviso no canto da tela (Electron)",
+  "description": "Lembreme — lembretes no desktop com aviso no canto da tela",
   "main": "main.js",
   "private": true,
+  "author": "Mateus Vinícius dos Passos",
+  "license": "MIT",
+  "homepage": "https://github.com/mateusvpassos/lembreme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mateusvpassos/lembreme.git"
+  },
   "scripts": {
     "start": "electron .",
     "icon": "electron scripts/make-icon.js",
@@ -35,7 +42,17 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Lembreme",
       "artifactName": "Lembreme-Setup-${version}.${ext}"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
+      },
+      {
+        "from": "THIRD-PARTY-NOTICES.md",
+        "to": "THIRD-PARTY-NOTICES.md"
+      }
+    ]
   },
   "devDependencies": {
     "electron": "^44.7.0",
