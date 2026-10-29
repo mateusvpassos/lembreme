@@ -22,7 +22,8 @@ jobs:
       - run: node node_modules/electron/install.js
       - run: npm test
       - name: Instalador
-        run: npm run dist
+        # numa tag o electron-builder tenta publicar sozinho; quem publica é o passo abaixo
+        run: npm run dist -- --publish never
       - name: GitHub Release
         shell: bash
         env:
