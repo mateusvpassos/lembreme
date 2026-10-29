@@ -1,0 +1,38 @@
+name: Problema
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu?
+      description: E o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Criei um lembrete mensal para o dia 31
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do Lembreme
+      placeholder: "0.3.1"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Versão do Windows
+      placeholder: "Windows 11 24H2"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Trecho de %APPDATA%\Lembreme\lembreme.log, se houver erro. Tire o texto dos seus lembretes se for pessoal.
+      render: text
