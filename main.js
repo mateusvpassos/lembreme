@@ -219,6 +219,7 @@ function updateTray() {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Abrir Lembreme', click: showWindow },
     { label: 'Testar aviso', click: testPopup },
+    { label: 'Sobre o Lembreme', click: () => { showWindow(); win?.webContents.send('about'); } },
     { type: 'separator' },
     {
       label: 'Iniciar com o Windows', type: 'checkbox', checked: loginEnabled(), enabled: app.isPackaged,
@@ -293,6 +294,19 @@ ipcMain.handle('clear-done', () => {
   changed();
 });
 ipcMain.handle('settings', () => settings());
+
+// ---------- sobre ----------
+const REPO = 'https://github.com/mateusvpassos/lembreme';
+// instalado, LICENSE e avisos ficam em resources/ (extraResources); rodando do código, na raiz
+const resFile = (packaged, dev) => app.isPackaged ? path.join(process.resourcesPath, packaged) : path.join(__dirname, dev);
+ipcMain.handle('about', () => ({ version: app.getVersion(), electron: process.versions.electron }));
+ipcMain.handle('notices', () => [resFile('LICENSE.txt', 'LICENSE'), resFile('THIRD-PARTY-NOTICES.md', 'THIRD-PARTY-NOTICES.md')]
+  .map(f => { try { return fs.readFileSync(f, 'utf8'); } catch { return ''; } })
+  .join('\n\n' + '─'.repeat(60) + '\n\n'));
+ipcMain.handle('open-link', (_, which) => {
+  const url = { repo: REPO, issues: REPO + '/issues/new/choose' }[which];
+  if (url) shell.openExternal(url);
+});
 ipcMain.handle('set-login', (_, on) => setLogin(on));
 ipcMain.on('test-popup', testPopup);
 

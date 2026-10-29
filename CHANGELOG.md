@@ -4,6 +4,11 @@ Mudanças de cada versão do Lembreme. Formato baseado em [Keep a Changelog](htt
 
 ## [Não lançado]
 
+## [0.3.3] - 2026-10-29
+
+### Adicionado
+- Tela **Sobre** (botão no rodapé e no menu da bandeja): versão, privacidade, créditos, licença MIT, licenças completas de terceiros e links para o GitHub e para reportar problema.
+
 ## [0.3.2] - 2026-10-28
 
 ### Segurança
@@ -34,6 +39,7 @@ Versão de uso pessoal, não publicada.
 - Iniciar com o Windows pela pasta Inicializar.
 - O app não bloqueia mais o desligamento do Windows.
 
-[Não lançado]: https://github.com/mateusvpassos/lembreme/compare/v0.3.2...HEAD
+[Não lançado]: https://github.com/mateusvpassos/lembreme/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/mateusvpassos/lembreme/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/mateusvpassos/lembreme/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/mateusvpassos/lembreme/releases/tag/v0.3.1

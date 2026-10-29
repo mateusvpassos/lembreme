@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('api', {
   testPopup: () => ipcRenderer.send('test-popup'),
   onChanged: cb => ipcRenderer.on('changed', (_, list) => cb(list)),
   onSettings: cb => ipcRenderer.on('settings', (_, s) => cb(s)),
+  about: () => ipcRenderer.invoke('about'),
+  notices: () => ipcRenderer.invoke('notices'),
+  openLink: which => ipcRenderer.invoke('open-link', which),
+  onAbout: cb => ipcRenderer.on('about', () => cb()),
   // popup
   onAlerts: cb => ipcRenderer.on('alerts', (_, a) => cb(a)),
   popupSize: h => ipcRenderer.send('popup-size', h),

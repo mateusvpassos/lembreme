@@ -329,8 +329,32 @@ function toast(text, action) {
   setTimeout(close, action ? 6000 : 2600);
 }
 
+// ---------- sobre ----------
+const about = $('#about');
+async function openAbout() {
+  const a = await api.about();
+  $('#about-version').textContent = a.version;
+  showNotices(false);
+  about.classList.remove('hidden');
+  about.querySelector('.m-close').focus();
+}
+const closeAbout = () => about.classList.add('hidden');
+async function showNotices(on) {
+  if (on && !$('#about-notices').textContent) $('#about-notices').textContent = await api.notices();
+  $('#about-main').classList.toggle('hidden', on);
+  $('#about-notices').classList.toggle('hidden', !on);
+  $('#about-licenses span').textContent = on ? 'Voltar' : 'Licenças completas';
+}
+$('#btn-about').addEventListener('click', openAbout);
+api.onAbout(openAbout);
+about.querySelector('.m-close').addEventListener('click', closeAbout);
+about.addEventListener('pointerdown', e => { if (e.target === about) closeAbout(); });
+$('#about-licenses').addEventListener('click', () => showNotices($('#about-notices').classList.contains('hidden')));
+for (const b of about.querySelectorAll('[data-link]')) b.addEventListener('click', () => api.openLink(b.dataset.link));
+
 // ---------- atalhos ----------
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !about.classList.contains('hidden')) { closeAbout(); return; }
   if (e.ctrlKey && e.key.toLowerCase() === 'n') { e.preventDefault(); resetForm(); }
   if (e.key === 'Escape' && (state.editing || state.selected)) resetForm();
 });

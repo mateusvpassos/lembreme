@@ -66,9 +66,42 @@
         </label>
         <div class="spacer"></div>
         <span class="muted">Fechar a janela mantém o Lembreme na bandeja</span>
+        <button id="btn-about" class="ghost" title="Versão, licença e créditos"><i data-icon="info"></i>Sobre</button>
       </footer>
     </section>
   </main>
+
+  <div id="about" class="modal-wrap hidden" role="dialog" aria-modal="true" aria-labelledby="about-title">
+    <div class="modal panel">
+      <div class="about-head">
+        <img src="icon.png" alt="">
+        <div>
+          <h2 id="about-title">Lembreme</h2>
+          <div class="muted">Versão <span id="about-version"></span></div>
+        </div>
+        <div class="spacer"></div>
+        <button class="icon-btn ghost m-close" title="Fechar (Esc)"><i data-icon="x"></i></button>
+      </div>
+      <div class="about-body" id="about-main">
+        <p>Lembretes no desktop com aviso no canto da tela.</p>
+        <p class="about-note"><i data-icon="power"></i><span>Funciona offline: não tem conta, não envia nada pela internet e não coleta dados. Seus lembretes ficam só neste computador, em <code>%APPDATA%\Lembreme</code>.</span></p>
+        <h3>Créditos</h3>
+        <ul class="credits">
+          <li><b>Ícones</b> Lucide <span class="muted">(ISC)</span></li>
+          <li><b>Fontes</b> Geist e Geist Mono <span class="muted">(SIL OFL 1.1)</span></li>
+          <li><b>Base</b> Electron e Chromium <span class="muted">(MIT e outras)</span></li>
+        </ul>
+        <p class="muted small">Software livre sob a licença MIT · © 2026 Mateus Vinícius dos Passos. Fornecido "como está", sem garantia.</p>
+      </div>
+      <pre class="about-text hidden" id="about-notices"></pre>
+      <div class="about-foot">
+        <button id="about-licenses"><i data-icon="receipt"></i><span>Licenças completas</span></button>
+        <div class="spacer"></div>
+        <button class="ghost" data-link="issues"><i data-icon="alert"></i>Reportar problema</button>
+        <button class="ghost" data-link="repo"><i data-icon="externalLink"></i>Código no GitHub</button>
+      </div>
+    </div>
+  </div>
 
   <div id="toasts"></div>
   <script src="app.js"></script>
