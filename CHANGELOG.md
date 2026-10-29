@@ -4,6 +4,8 @@ Mudanças de cada versão do Lembreme. Formato baseado em [Keep a Changelog](htt
 
 ## [Não lançado]
 
+## [0.3.2] - 2026-10-28
+
 ### Segurança
 - Electron 44.7.0 → 44.10.0 (correção de certificados intermediários eMudhra comprometidos). Dependências de build atualizadas (undici, fast-uri).
 
@@ -32,5 +34,6 @@ Versão de uso pessoal, não publicada.
 - Iniciar com o Windows pela pasta Inicializar.
 - O app não bloqueia mais o desligamento do Windows.
 
-[Não lançado]: https://github.com/mateusvpassos/lembreme/compare/v0.3.1...HEAD
+[Não lançado]: https://github.com/mateusvpassos/lembreme/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/mateusvpassos/lembreme/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/mateusvpassos/lembreme/releases/tag/v0.3.1
