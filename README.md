@@ -42,7 +42,7 @@ Saída em `dist/Lembreme-Setup-<versão>.exe`. Usa o Electron do `node_modules` 
 
 Ícone: `assets/icon.svg` → `npm run icon` gera `renderer/icon.png`. Testes: `npm test`.
 
-Publicar uma versão: suba a versão no `package.json` e crie a tag (`git tag v0.3.0 && git push origin v0.3.0`). O workflow `release.yml` roda os testes, gera o instalador e cria a Release.
+Publicar uma versão: suba a versão no `package.json` e crie a tag (`git tag v0.3.1 && git push origin v0.3.1`). O workflow `release.yml` roda os testes, gera o instalador e cria a Release.
 
 ## Licença
 
