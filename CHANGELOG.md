@@ -4,6 +4,9 @@ Mudanças de cada versão do Lembreme. Formato baseado em [Keep a Changelog](htt
 
 ## [Não lançado]
 
+### Segurança
+- Electron 44.7.0 → 44.10.0 (correção de certificados intermediários eMudhra comprometidos). Dependências de build atualizadas (undici, fast-uri).
+
 ## [0.3.1] - 2026-10-28
 
 Primeira versão pública.
