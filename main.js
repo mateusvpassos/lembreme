@@ -266,7 +266,9 @@ function createTray(attempt = 1) {
 
 // ---------- IPC da janela ----------
 ipcMain.handle('list', () => db.reminders);
-ipcMain.handle('save', (_, r) => {
+ipcMain.handle('save', (_, r) => saveReminder(r));
+
+function saveReminder(r) {
   const err = validate(r);
   if (err) return { error: err };
   const anchorDay = +r.due.slice(8, 10);
@@ -278,7 +280,51 @@ ipcMain.handle('save', (_, r) => {
   }
   changed();
   return { ok: true };
-});
+}
+
+// ---------- caixa de entrada (outros apps, ex.: Valete) ----------
+// Cada pedido é um arquivo <userData>/inbox/*.json: { op: 'add'|'done'|'remove', reminder?, id? }.
+// O resultado vai para inbox/done/<mesmo nome> para quem pediu conferir.
+const inboxDir = () => path.join(app.getPath('userData'), 'inbox');
+function processInbox() {
+  const dir = inboxDir();
+  let files;
+  try { files = fs.readdirSync(dir).filter(f => f.endsWith('.json')); } catch { return; }
+  fs.mkdirSync(path.join(dir, 'done'), { recursive: true });
+  for (const f of files) {
+    const full = path.join(dir, f);
+    let res;
+    try {
+      const req = JSON.parse(fs.readFileSync(full, 'utf8'));
+      if (req.op === 'add') res = saveReminder({ ...req.reminder, id: undefined });
+      else if (req.op === 'done' || req.op === 'remove') {
+        const r = db.reminders.find(x => x.id === req.id);
+        if (!r) res = { error: 'Lembrete não encontrado.' };
+        else {
+          if (req.op === 'remove') db.reminders = db.reminders.filter(x => x.id !== req.id);
+          else { r.done = true; r.doneAt = toLocal(new Date()); }
+          changed();
+          res = { ok: true };
+        }
+      } else res = { error: 'Pedido inválido.' };
+    } catch (e) {
+      if (e.code === 'EBUSY' || e instanceof SyntaxError) continue; // arquivo ainda sendo escrito
+      res = { error: String(e.message || e) };
+    }
+    try {
+      fs.writeFileSync(path.join(dir, 'done', f), JSON.stringify(res));
+      fs.unlinkSync(full);
+    } catch (e) { log('inbox', e); }
+  }
+}
+function watchInbox() {
+  fs.mkdirSync(inboxDir(), { recursive: true });
+  processInbox();
+  let t;
+  try { fs.watch(inboxDir(), () => { clearTimeout(t); t = setTimeout(processInbox, 150); }); } catch (e) { log('inbox watch', e); }
+  setInterval(processInbox, 30_000);
+}
+
 ipcMain.handle('remove', (_, id) => {
   const r = db.reminders.find(x => x.id === id);
   db.reminders = db.reminders.filter(x => x.id !== id);
@@ -324,6 +370,7 @@ if (!app.requestSingleInstanceLock()) {
     createTray();
     tick();
     setInterval(tick, 10_000);
+    watchInbox();
     setInterval(updateTray, 60_000);
   });
   app.on('window-all-closed', () => {}); // continua na bandeja
